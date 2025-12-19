@@ -1,0 +1,29 @@
+body {
+  background: #0f1220;
+  color: #eaeaf0;
+  font-family: system-ui, sans-serif;
+  text-align: center;
+}
+
+#canvas {
+  width: 100vw;
+  height: 80vh;
+  border-top: 1px solid #333;
+  cursor: crosshair;
+}
+
+.node {
+  stroke: #fff;
+  stroke-width: 1px;
+}
+
+.edge {
+  stroke: #666;
+  stroke-width: 2px;
+}
+
+.label {
+  fill: #ccc;
+  font-size: 12px;
+  pointer-events: none;
+}
