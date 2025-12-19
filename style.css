@@ -1,20 +1,28 @@
 body {
+  margin: 0;
+  padding: 0;
   background: #0f1220;
   color: #eaeaf0;
   font-family: system-ui, sans-serif;
   text-align: center;
+  user-select: none;
 }
 
 #canvas {
   width: 100vw;
-  height: 80vh;
+  height: 70vh;
   border-top: 1px solid #333;
-  cursor: crosshair;
+  touch-action: none;
 }
 
 .node {
   stroke: #fff;
-  stroke-width: 1px;
+  stroke-width: 2px;
+}
+
+.node.selected {
+  stroke: #ffff00;
+  stroke-width: 4px;
 }
 
 .edge {
@@ -26,4 +34,29 @@ body {
   fill: #ccc;
   font-size: 12px;
   pointer-events: none;
+}
+
+#controls {
+  display: flex;
+  justify-content: space-around;
+  padding: 5px;
+  background: #111422;
+}
+
+.popup {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #1c1f34;
+  padding: 10px;
+  border: 2px solid #555;
+  display: none;
+  z-index: 10;
+}
+
+.popup button {
+  margin: 5px;
+  padding: 8px;
+  font-size: 14px;
 }
