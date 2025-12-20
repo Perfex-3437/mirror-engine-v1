@@ -106,3 +106,15 @@ addNode("attacker");
 addNode("defender");
 addNode("observer");
 render();
+document.getElementById("runScenario").onclick = () => {
+  // Force multiple simulation steps
+  for (let i = 0; i < 5; i++) step();
+};
+
+document.getElementById("triggerProbe").onclick = () => {
+  if (nodes.length === 0) return;
+
+  const target = nodes[Math.floor(Math.random() * nodes.length)];
+  target.uncertainty = Math.min(1, target.uncertainty + 0.4);
+  render();
+};
