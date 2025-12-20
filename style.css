@@ -1,0 +1,28 @@
+body {
+  margin: 0;
+  background: #0e1022;
+  color: #eaeaf0;
+  font-family: system-ui, sans-serif;
+  text-align: center;
+}
+
+#stats {
+  display: flex;
+  justify-content: space-around;
+  padding: 8px;
+  background: #15182f;
+}
+
+#graph {
+  width: 100vw;
+  height: 75vh;
+}
+
+.node {
+  stroke: white;
+  stroke-width: 1.5px;
+}
+
+.edge {
+  stroke-width: 2px;
+}
