@@ -1,0 +1,178 @@
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Exploration Help</title>
+  <style>
+    :root {
+      --bg: #0b0f14;
+      --card: #121826;
+      --accent: #6ae3ff;
+      --accent-soft: rgba(106, 227, 255, 0.15);
+      --text: #e6e9ef;
+      --muted: #9aa4b2;
+      --border: rgba(255,255,255,0.08);
+    }* {
+  box-sizing: border-box;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, "Helvetica Neue", Arial, sans-serif;
+}
+
+body {
+  margin: 0;
+  background: radial-gradient(1200px 600px at 20% -10%, rgba(106,227,255,0.08), transparent 40%), var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+  padding: 2rem;
+}
+
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  display: grid;
+  gap: 1.5rem;
+}
+
+header {
+  padding: 1.5rem 1.75rem;
+  background: linear-gradient(180deg, rgba(106,227,255,0.12), transparent);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+}
+
+header h1 {
+  margin: 0 0 0.5rem 0;
+  font-size: 1.8rem;
+  letter-spacing: 0.3px;
+}
+
+header p {
+  margin: 0;
+  color: var(--muted);
+  max-width: 70ch;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 1.25rem;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, transparent 30%, var(--accent-soft), transparent 70%);
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.card h2 {
+  margin-top: 0;
+  font-size: 1.2rem;
+  color: var(--accent);
+}
+
+ul {
+  padding-left: 1.2rem;
+  margin: 0.5rem 0 0 0;
+}
+
+li {
+  margin-bottom: 0.6rem;
+}
+
+li strong {
+  color: #ffffff;
+}
+
+.questions {
+  margin-top: 0.5rem;
+}
+
+.question {
+  padding: 0.75rem 1rem;
+  border-left: 3px solid var(--accent);
+  background: rgba(106,227,255,0.05);
+  border-radius: 8px;
+  margin-bottom: 0.75rem;
+  color: var(--muted);
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.question:hover {
+  transform: translateX(5px);
+  background: rgba(106,227,255,0.12);
+  color: #ffffff;
+}
+
+footer {
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin-top: 1rem;
+}
+
+footer span {
+  color: var(--accent);
+}
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Exploring the Agent Network</h1>
+      <p>
+        This space is designed for exploration, not judgment. You are observing how agents interact, influence one another,
+        and adapt under uncertainty.
+      </p>
+    </header><section class="grid">
+  <div class="card">
+    <h2>What you’re seeing</h2>
+    <ul>
+      <li><strong>Nodes</strong> represent agents (attacker, defender, observer).</li>
+      <li><strong>Edges</strong> represent possible influence or attack paths.</li>
+      <li><strong>Uncertainty</strong> means lack of confidence, not danger.</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h2>What to experiment with</h2>
+    <ul>
+      <li><strong>Add nodes</strong> → see how uncertainty spreads.</li>
+      <li><strong>Trigger probes</strong> → simulate investigation.</li>
+      <li><strong>Pause and step</strong> → watch decision effects.</li>
+    </ul>
+  </div>
+</section>
+
+<section class="card">
+  <h2>Reflective questions</h2>
+  <div class="questions">
+    <div class="question">Which agents gain influence as uncertainty increases, and why?</div>
+    <div class="question">What assumptions are you making about intent when you label a node as an attacker or defender?</div>
+    <div class="question">How does adding a single observer change the behavior of the entire network?</div>
+    <div class="question">Where does uncertainty amplify insight rather than confusion?</div>
+    <div class="question">If you remove the idea of a "correct" outcome, what patterns become easier to notice?</div>
+  </div>
+</section>
+
+<footer>
+  <p>
+    There is <span>no correct outcome</span>. You are exploring patterns, not answers.
+  </p>
+</footer>
+
+  </div>
+</body>
+</html>
