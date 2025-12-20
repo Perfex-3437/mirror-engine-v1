@@ -8,7 +8,6 @@ body {
 h1 {
   text-align: center;
   margin: 8px;
-  font-weight: 600;
 }
 
 #controls {
@@ -37,14 +36,12 @@ button:hover {
   height: 70vh;
 }
 
-/* Nodes */
 .node {
   stroke: #ffffff;
   stroke-width: 1.5px;
   transition: r 0.3s ease, fill 0.3s ease;
 }
 
-/* Pulse for unstable nodes */
 @keyframes pulse {
   0% { r: 16; }
   50% { r: 22; }
@@ -55,14 +52,12 @@ button:hover {
   animation: pulse 1.6s infinite;
 }
 
-/* Edges */
 .edge {
   stroke: #9aa0ff;
   stroke-width: 2px;
   transition: stroke-opacity 0.4s ease;
 }
 
-/* Status */
 #statusBars {
   background: #11142a;
   padding: 8px;
