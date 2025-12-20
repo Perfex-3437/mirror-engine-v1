@@ -1,10 +1,10 @@
-import { agentStep } from "./behavior.js";
+import { applyBehavior } from "./behavior.js";
 import { predictThreat } from "./predictor.js";
-import { metaEvaluate } from "./metaCritic.js";
+import { metaCritic } from "./metaCritic.js";
 
 const svg = d3.select("#graph");
 const width = window.innerWidth;
-const height = window.innerHeight * 0.75;
+const height = window.innerHeight * 0.7;
 
 svg.attr("viewBox", `0 0 ${width} ${height}`);
 
@@ -14,30 +14,13 @@ let links = [];
 const gLinks = svg.append("g");
 const gNodes = svg.append("g");
 
-const sim = d3.forceSimulation(nodes)
-  .force("charge", d3.forceManyBody().strength(-200))
+const simulation = d3.forceSimulation(nodes)
+  .force("charge", d3.forceManyBody().strength(-220))
   .force("center", d3.forceCenter(width / 2, height / 2))
   .force("link", d3.forceLink(links).distance(120))
-  .on("tick", tick);
+  .on("tick", ticked);
 
-function addNode(type = "observer") {
-  const node = {
-    id: crypto.randomUUID(),
-    type,
-    uncertainty: Math.random() * 0.3
-  };
-  nodes.push(node);
-
-  if (nodes.length > 1) {
-    links.push({
-      source: node,
-      target: nodes[Math.floor(Math.random() * (nodes.length - 1))],
-      weight: Math.random()
-    });
-  }
-}
-
-function tick() {
+function ticked() {
   gLinks.selectAll("line")
     .attr("x1", d => d.source.x)
     .attr("y1", d => d.source.y)
@@ -54,52 +37,71 @@ function render() {
   edges.enter().append("line")
     .attr("class", "edge")
     .merge(edges)
-    .attr("stroke-opacity", d => (d.source.uncertainty + d.target.uncertainty) / 2)
-    .attr("stroke", "#aaa");
+    .attr("stroke-opacity", d =>
+      Math.min(1, (d.source.uncertainty + d.target.uncertainty) / 2)
+    );
   edges.exit().remove();
 
-  const nodesSel = gNodes.selectAll("circle").data(nodes, d => d.id);
-  nodesSel.enter().append("circle")
-    .attr("r", 18)
+  const nodeSel = gNodes.selectAll("circle").data(nodes, d => d.id);
+  nodeSel.enter().append("circle")
+    .attr("r", 16)
     .attr("class", "node")
-    .merge(nodesSel)
-    .attr("fill", d =>
-      d.type === "attacker"
-        ? d3.interpolateReds(d.uncertainty)
-        : d.type === "defender"
-        ? d3.interpolateBlues(1 - d.uncertainty)
-        : "#888"
+    .merge(nodeSel)
+    .classed("high-uncertainty", d => d.uncertainty > 0.6)
+    .attr("fill", d => {
+      if (d.type === "attacker") return d3.interpolateReds(d.uncertainty);
+      if (d.type === "defender") return d3.interpolateBlues(1 - d.uncertainty);
+      return d3.interpolateGreys(d.uncertainty);
+    });
+  nodeSel.exit().remove();
+
+  simulation.nodes(nodes);
+  simulation.force("link").links(links);
+  simulation.alpha(0.6).restart();
+}
+
+function updateStatus(threat) {
+  document.getElementById("threatLevel").textContent = threat.toFixed(2);
+  document.getElementById("prediction").textContent =
+    threat > 0.6 ? "Escalation" : "Low activity";
+}
+
+function step() {
+  applyBehavior(nodes);
+
+  links.forEach(l => {
+    l.target.uncertainty = Math.min(
+      1,
+      l.target.uncertainty + l.source.uncertainty * 0.05
     );
-  nodesSel.exit().remove();
-
-  sim.nodes(nodes);
-  sim.force("link").links(links);
-  sim.alpha(0.7).restart();
-
-  updateStats();
-}
-
-function updateStats() {
-  document.getElementById("nodeCount").textContent = nodes.length;
-  document.getElementById("edgeCount").textContent = links.length;
-
-  const avg = nodes.reduce((s, n) => s + n.uncertainty, 0) / Math.max(1, nodes.length);
-  document.getElementById("uncertainty").textContent = avg.toFixed(2);
-}
-
-// --- Autonomous loop ---
-setInterval(() => {
-  if (Math.random() < 0.2) addNode(Math.random() < 0.5 ? "attacker" : "observer");
-
-  agentStep(nodes, links);
+  });
 
   const threat = predictThreat(nodes, links);
-  metaEvaluate(threat, nodes);
+  metaCritic(threat, nodes);
 
+  updateStatus(threat);
   render();
-}, 1200);
+}
 
-// bootstrap
+setInterval(step, 1200);
+
+// Bootstrap
+function addNode(type) {
+  const node = {
+    id: crypto.randomUUID(),
+    type,
+    uncertainty: Math.random() * 0.3
+  };
+  nodes.push(node);
+
+  if (nodes.length > 1) {
+    links.push({
+      source: node,
+      target: nodes[Math.floor(Math.random() * (nodes.length - 1))]
+    });
+  }
+}
+
 addNode("attacker");
 addNode("defender");
 addNode("observer");
