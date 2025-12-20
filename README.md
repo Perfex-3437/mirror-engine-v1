@@ -9,5 +9,6 @@ This is a minimal reasoning engine for adversarial uncertainty. It intentionally
 - Add nodes → see how uncertainty spreads
 - Trigger probes → simulate investigation
 - Pause and step → watch decision effects
-# There is no correct outcome.
-# You are exploring patterns, not answers.
+
+There is no correct outcome.
+You are exploring patterns, not answers.
