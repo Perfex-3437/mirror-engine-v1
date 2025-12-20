@@ -46,6 +46,9 @@ function render() {
   nodeSel.enter().append("circle")
     .attr("r", 16)
     .attr("class", "node")
+    .attr("stroke-opacity", d =>
+  Math.max(0.15, (d.source.uncertainty + d.target.uncertainty) / 2)
+)
     .merge(nodeSel)
     .classed("high-uncertainty", d => d.uncertainty > 0.6)
     .attr("fill", d => {
@@ -81,6 +84,7 @@ function step() {
 
   updateStatus(threat);
   render();
+  simulation.alpha(0.4).restart();
 }
 
 setInterval(step, 1200);
@@ -118,3 +122,25 @@ document.getElementById("triggerProbe").onclick = () => {
   target.uncertainty = Math.min(1, target.uncertainty + 0.4);
   render();
 };
+svg.on("click", (event) => {
+  const [x, y] = d3.pointer(event);
+
+  const node = {
+    id: crypto.randomUUID(),
+    type: Math.random() < 0.5 ? "attacker" : "observer",
+    uncertainty: Math.random() * 0.2,
+    x,
+    y
+  };
+
+  nodes.push(node);
+
+  if (nodes.length > 1) {
+    links.push({
+      source: node,
+      target: nodes[Math.floor(Math.random() * (nodes.length - 1))]
+    });
+  }
+
+  render();
+});
