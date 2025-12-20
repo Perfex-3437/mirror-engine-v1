@@ -10,12 +10,13 @@ svg.attr("viewBox", `0 0 ${width} ${height}`);
 
 let nodes = [];
 let links = [];
+let paused = false;
 
 const gLinks = svg.append("g");
 const gNodes = svg.append("g");
 
 const simulation = d3.forceSimulation(nodes)
-  .force("charge", d3.forceManyBody().strength(-200))
+  .force("charge", d3.forceManyBody().strength(-220))
   .force("center", d3.forceCenter(width / 2, height / 2))
   .force("link", d3.forceLink(links).distance(120))
   .on("tick", ticked);
@@ -33,18 +34,21 @@ function ticked() {
 }
 
 function render() {
-  const edges = gLinks.selectAll("line").data(links);
-  edges.enter().append("line").attr("class", "edge").merge(edges)
+  const edgeSel = gLinks.selectAll("line").data(links);
+  edgeSel.enter().append("line")
+    .attr("class", "edge")
+    .merge(edgeSel)
     .attr("stroke-opacity", d =>
-      Math.min(1, (d.source.uncertainty + d.target.uncertainty) / 2)
+      Math.max(0.15, (d.source.uncertainty + d.target.uncertainty) / 2)
     );
-  edges.exit().remove();
+  edgeSel.exit().remove();
 
   const nodeSel = gNodes.selectAll("circle").data(nodes, d => d.id);
   nodeSel.enter().append("circle")
     .attr("r", 16)
     .attr("class", "node")
     .merge(nodeSel)
+    .classed("high-uncertainty", d => d.uncertainty > 0.6)
     .attr("fill", d => {
       if (d.type === "attacker") return d3.interpolateReds(d.uncertainty);
       if (d.type === "defender") return d3.interpolateBlues(1 - d.uncertainty);
@@ -54,9 +58,8 @@ function render() {
 
   simulation.nodes(nodes);
   simulation.force("link").links(links);
-  simulation.alpha(0.6).restart();
+  simulation.alpha(0.5).restart();
 
-  // Update status
   document.getElementById("nodeCount").textContent = nodes.length;
   document.getElementById("edgeCount").textContent = links.length;
 }
@@ -76,66 +79,53 @@ function step() {
 
   document.getElementById("threatLevel").textContent = threat.toFixed(2);
   document.getElementById("prediction").textContent =
-    threat > 0.6 ? "Escalation" : "Low";
+    threat > 0.6 ? "Escalation" : "Low activity";
 
   render();
 }
 
-// --- Interaction Wiring ---
+/* ---- INTERACTION WIRES ---- */
 
-let paused = false;
+document.getElementById("stepSim").onclick = () => step();
 
-// Step once
-document.getElementById("stepSim").onclick = () => {
-  step();
-};
-
-// Pause / resume
 document.getElementById("pauseSim").onclick = () => {
   paused = !paused;
 };
 
-// Run multiple steps quickly
 document.getElementById("runScenario").onclick = () => {
   for (let i = 0; i < 6; i++) step();
 };
 
-// Trigger a probe (random node)
 document.getElementById("triggerProbe").onclick = () => {
-  if (nodes.length === 0) return;
-  const target = nodes[Math.floor(Math.random() * nodes.length)];
-  target.uncertainty = Math.min(1, target.uncertainty + 0.3);
-  step();
+  if (!nodes.length) return;
+  const t = nodes[Math.floor(Math.random() * nodes.length)];
+  t.uncertainty = Math.min(1, t.uncertainty + 0.35);
+  render();
 };
 
-// Add node on space / click (UX)
 svg.on("click", () => {
-  const newNode = {
+  const node = {
     id: crypto.randomUUID(),
     type: Math.random() < 0.5 ? "attacker" : "observer",
-    uncertainty: Math.random() * 0.2
+    uncertainty: Math.random() * 0.25
   };
-  nodes.push(newNode);
+  nodes.push(node);
 
   if (nodes.length > 1) {
     links.push({
-      source: newNode,
+      source: node,
       target: nodes[Math.floor(Math.random() * (nodes.length - 1))]
     });
   }
+
   render();
 });
 
-// Autonomous loop
 setInterval(() => {
   if (!paused) step();
 }, 1500);
 
-// Bootstrap with a few nodes
-addNode("attacker");
-addNode("defender");
-addNode("observer");
-render();
+/* ---- BOOTSTRAP ---- */
 
 function addNode(type) {
   const node = {
@@ -152,3 +142,8 @@ function addNode(type) {
     });
   }
 }
+
+addNode("attacker");
+addNode("defender");
+addNode("observer");
+render();
