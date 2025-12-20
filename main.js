@@ -15,7 +15,7 @@ const gLinks = svg.append("g");
 const gNodes = svg.append("g");
 
 const simulation = d3.forceSimulation(nodes)
-  .force("charge", d3.forceManyBody().strength(-220))
+  .force("charge", d3.forceManyBody().strength(-200))
   .force("center", d3.forceCenter(width / 2, height / 2))
   .force("link", d3.forceLink(links).distance(120))
   .on("tick", ticked);
@@ -34,9 +34,7 @@ function ticked() {
 
 function render() {
   const edges = gLinks.selectAll("line").data(links);
-  edges.enter().append("line")
-    .attr("class", "edge")
-    .merge(edges)
+  edges.enter().append("line").attr("class", "edge").merge(edges)
     .attr("stroke-opacity", d =>
       Math.min(1, (d.source.uncertainty + d.target.uncertainty) / 2)
     );
@@ -46,11 +44,7 @@ function render() {
   nodeSel.enter().append("circle")
     .attr("r", 16)
     .attr("class", "node")
-    .attr("stroke-opacity", d =>
-  Math.max(0.15, (d.source.uncertainty + d.target.uncertainty) / 2)
-)
     .merge(nodeSel)
-    .classed("high-uncertainty", d => d.uncertainty > 0.6)
     .attr("fill", d => {
       if (d.type === "attacker") return d3.interpolateReds(d.uncertainty);
       if (d.type === "defender") return d3.interpolateBlues(1 - d.uncertainty);
@@ -61,12 +55,10 @@ function render() {
   simulation.nodes(nodes);
   simulation.force("link").links(links);
   simulation.alpha(0.6).restart();
-}
 
-function updateStatus(threat) {
-  document.getElementById("threatLevel").textContent = threat.toFixed(2);
-  document.getElementById("prediction").textContent =
-    threat > 0.6 ? "Escalation" : "Low activity";
+  // Update status
+  document.getElementById("nodeCount").textContent = nodes.length;
+  document.getElementById("edgeCount").textContent = links.length;
 }
 
 function step() {
@@ -82,14 +74,69 @@ function step() {
   const threat = predictThreat(nodes, links);
   metaCritic(threat, nodes);
 
-  updateStatus(threat);
+  document.getElementById("threatLevel").textContent = threat.toFixed(2);
+  document.getElementById("prediction").textContent =
+    threat > 0.6 ? "Escalation" : "Low";
+
   render();
-  simulation.alpha(0.4).restart();
 }
 
-setInterval(step, 1200);
+// --- Interaction Wiring ---
 
-// Bootstrap
+let paused = false;
+
+// Step once
+document.getElementById("stepSim").onclick = () => {
+  step();
+};
+
+// Pause / resume
+document.getElementById("pauseSim").onclick = () => {
+  paused = !paused;
+};
+
+// Run multiple steps quickly
+document.getElementById("runScenario").onclick = () => {
+  for (let i = 0; i < 6; i++) step();
+};
+
+// Trigger a probe (random node)
+document.getElementById("triggerProbe").onclick = () => {
+  if (nodes.length === 0) return;
+  const target = nodes[Math.floor(Math.random() * nodes.length)];
+  target.uncertainty = Math.min(1, target.uncertainty + 0.3);
+  step();
+};
+
+// Add node on space / click (UX)
+svg.on("click", () => {
+  const newNode = {
+    id: crypto.randomUUID(),
+    type: Math.random() < 0.5 ? "attacker" : "observer",
+    uncertainty: Math.random() * 0.2
+  };
+  nodes.push(newNode);
+
+  if (nodes.length > 1) {
+    links.push({
+      source: newNode,
+      target: nodes[Math.floor(Math.random() * (nodes.length - 1))]
+    });
+  }
+  render();
+});
+
+// Autonomous loop
+setInterval(() => {
+  if (!paused) step();
+}, 1500);
+
+// Bootstrap with a few nodes
+addNode("attacker");
+addNode("defender");
+addNode("observer");
+render();
+
 function addNode(type) {
   const node = {
     id: crypto.randomUUID(),
@@ -105,42 +152,3 @@ function addNode(type) {
     });
   }
 }
-
-addNode("attacker");
-addNode("defender");
-addNode("observer");
-render();
-document.getElementById("runScenario").onclick = () => {
-  // Force multiple simulation steps
-  for (let i = 0; i < 5; i++) step();
-};
-
-document.getElementById("triggerProbe").onclick = () => {
-  if (nodes.length === 0) return;
-
-  const target = nodes[Math.floor(Math.random() * nodes.length)];
-  target.uncertainty = Math.min(1, target.uncertainty + 0.4);
-  render();
-};
-svg.on("click", (event) => {
-  const [x, y] = d3.pointer(event);
-
-  const node = {
-    id: crypto.randomUUID(),
-    type: Math.random() < 0.5 ? "attacker" : "observer",
-    uncertainty: Math.random() * 0.2,
-    x,
-    y
-  };
-
-  nodes.push(node);
-
-  if (nodes.length > 1) {
-    links.push({
-      source: node,
-      target: nodes[Math.floor(Math.random() * (nodes.length - 1))]
-    });
-  }
-
-  render();
-});
